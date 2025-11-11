@@ -4,7 +4,13 @@ let ai = 'O';
 let gameOver = false;
 let useMinimax = false;
 
-// 🚨 建議 3：將勝利組合設為常數
+// 🚨 新增：計分變數
+let scores = {
+    player: 0,
+    ai: 0,
+    draw: 0
+};
+
 const WINNING_COMBOS = [
     [0,1,2],[3,4,5],[6,7,8], // 橫向
     [0,3,6],[1,4,7],[2,5,8], // 縱向
@@ -18,29 +24,44 @@ const hardBtn = document.getElementById('hard');
 const gameArea = document.getElementById('game');
 const statusMessage = document.getElementById('status-message');
 
+// 🚨 新增：計分板 DOM 元素
+const playerScoreEl = document.getElementById('player-score');
+const aiScoreEl = document.getElementById('ai-score');
+const drawScoreEl = document.getElementById('draw-score');
+
+// 🚨 新增：更新計分板 UI 的函數
+function updateScoreBoard() {
+    playerScoreEl.textContent = scores.player;
+    aiScoreEl.textContent = scores.ai;
+    drawScoreEl.textContent = scores.draw;
+}
+
 // --- 遊戲初始化與模式選擇 ---
 function initializeGame(hardMode = false) {
     board = Array(9).fill('');
-    player = 'X'; // 確保 X 總是先手
+    player = 'X'; 
     
     cells.forEach(cell => {
         cell.textContent = '';
-        cell.classList.remove('win'); // 🚨 建議 1：重新開始時移除勝利樣式
+        cell.classList.remove('win');
     });
     
     gameOver = false;
     useMinimax = hardMode;
     
-    // 🚨 建議 2：設置模式按鈕的 active 狀態
     easyBtn.classList.toggle('active', !hardMode);
     hardBtn.classList.toggle('active', hardMode);
     
     gameArea.style.display = 'block';
     statusMessage.textContent = '輪到你了 (X)！';
+    
+    // 🚨 確保初始化時更新計分板
+    updateScoreBoard(); 
 }
 
 easyBtn.addEventListener('click', () => initializeGame(false));
 hardBtn.addEventListener('click', () => initializeGame(true));
+
 
 // --- 玩家下棋邏輯 ---
 cells.forEach(cell => {
@@ -142,21 +163,25 @@ function minimax(newBoard, depth, isMaximizing) {
 
 // --- 檢查勝負與平局 ---
 function checkWin(symbol, currentBoard = board) {
-  // 🚨 建議 3：使用常數
   return WINNING_COMBOS.some(combo => combo.every(i => currentBoard[i] === symbol));
 }
 
 function checkResult(lastMover) {
-    // 🚨 建議 1：使用 WINNING_COMBOS 尋找獲勝連線
     const winningCombo = WINNING_COMBOS.find(combo => combo.every(i => board[i] === lastMover));
 
     if (winningCombo) {
         statusMessage.textContent = `${lastMover === player ? '恭喜你贏了' : '電腦贏了'}！遊戲結束。`;
         gameOver = true;
         
-        // 🚨 建議 1：高亮獲勝格子
-        winningCombo.forEach(i => cells[i].classList.add('win'));
+        // 🚨 增加分數
+        if (lastMover === player) {
+            scores.player++;
+        } else {
+            scores.ai++;
+        }
+        updateScoreBoard(); // 更新 UI
         
+        winningCombo.forEach(i => cells[i].classList.add('win'));
         return true;
     }
     
@@ -164,6 +189,11 @@ function checkResult(lastMover) {
     if (!board.includes('')) {
         statusMessage.textContent = '平局！沒有人獲勝。';
         gameOver = true;
+        
+        // 🚨 增加平局分數
+        scores.draw++;
+        updateScoreBoard(); // 更新 UI
+        
         return true;
     }
     
@@ -180,3 +210,6 @@ restartBtn.addEventListener('click', () => {
   // 為了保持選擇的模式，我們只需要重新初始化遊戲
   initializeGame(useMinimax); 
 });
+
+// --- 程式碼尾部新增一個強制啟動 (確保載入後顯示計分板) ---
+updateScoreBoard(); 
