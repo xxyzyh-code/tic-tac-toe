@@ -4,19 +4,37 @@ let ai = 'O';
 let gameOver = false;
 let useMinimax = false;
 
+// 🚨 建議 3：將勝利組合設為常數
+const WINNING_COMBOS = [
+    [0,1,2],[3,4,5],[6,7,8], // 橫向
+    [0,3,6],[1,4,7],[2,5,8], // 縱向
+    [0,4,8],[2,4,6]          // 對角線
+];
+
 const cells = document.querySelectorAll('.cell');
 const restartBtn = document.getElementById('restart');
 const easyBtn = document.getElementById('easy');
 const hardBtn = document.getElementById('hard');
 const gameArea = document.getElementById('game');
-const statusMessage = document.getElementById('status-message'); // 取得新的狀態元素
+const statusMessage = document.getElementById('status-message');
 
 // --- 遊戲初始化與模式選擇 ---
 function initializeGame(hardMode = false) {
     board = Array(9).fill('');
-    cells.forEach(cell => cell.textContent = '');
+    player = 'X'; // 確保 X 總是先手
+    
+    cells.forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('win'); // 🚨 建議 1：重新開始時移除勝利樣式
+    });
+    
     gameOver = false;
     useMinimax = hardMode;
+    
+    // 🚨 建議 2：設置模式按鈕的 active 狀態
+    easyBtn.classList.toggle('active', !hardMode);
+    hardBtn.classList.toggle('active', hardMode);
+    
     gameArea.style.display = 'block';
     statusMessage.textContent = '輪到你了 (X)！';
 }
@@ -124,19 +142,21 @@ function minimax(newBoard, depth, isMaximizing) {
 
 // --- 檢查勝負與平局 ---
 function checkWin(symbol, currentBoard = board) {
-  const wins = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  // 檢查勝利
-  return wins.some(combo => combo.every(i => currentBoard[i] === symbol));
+  // 🚨 建議 3：使用常數
+  return WINNING_COMBOS.some(combo => combo.every(i => currentBoard[i] === symbol));
 }
 
 function checkResult(lastMover) {
-    if (checkWin(lastMover)) {
+    // 🚨 建議 1：使用 WINNING_COMBOS 尋找獲勝連線
+    const winningCombo = WINNING_COMBOS.find(combo => combo.every(i => board[i] === lastMover));
+
+    if (winningCombo) {
         statusMessage.textContent = `${lastMover === player ? '恭喜你贏了' : '電腦贏了'}！遊戲結束。`;
         gameOver = true;
+        
+        // 🚨 建議 1：高亮獲勝格子
+        winningCombo.forEach(i => cells[i].classList.add('win'));
+        
         return true;
     }
     
