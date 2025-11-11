@@ -73,3 +73,25 @@ body {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
+
+/* 🚨 新增：計分板樣式 */
+#score-board {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin: 10px auto;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+#score-board p {
+  margin: 0;
+  font-size: 18px;
+}
+
+#score-board span {
+  font-weight: bold;
+  color: #d35400; /* 突顯分數的顏色 */
+}
