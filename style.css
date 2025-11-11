@@ -1,3 +1,4 @@
+/* style.css */
 body {
   font-family: sans-serif;
   text-align: center;
@@ -44,9 +45,31 @@ body {
   cursor: pointer;
 }
 
+/* 🚨 建議 2：模式按鈕的視覺反饋 */
+#mode-select button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  cursor: default;
+  font-weight: bold;
+}
+
 #status-message {
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 15px;
   color: #007bff; /* 使用一個醒目的顏色 */
+}
+
+/* 🚨 建議 1：勝利格子的高亮樣式 */
+.cell.win {
+  background-color: #ffda6a; /* 亮黃色 */
+  color: #333;
+  border-color: #f39c12;
+  animation: flashWin 0.5s ease-in-out 3; /* 讓格子閃爍幾次 */
+}
+
+@keyframes flashWin {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
