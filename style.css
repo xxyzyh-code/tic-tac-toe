@@ -95,3 +95,28 @@ body {
   font-weight: bold;
   color: #d35400; /* 突顯分數的顏色 */
 }
+
+/* 🚨 新增：平局時所有格子的高亮樣式 */
+.cell.draw-win {
+  background-color: #f7d794; /* 較淺的橘黃色 */
+  color: #333;
+  border-color: #e67e22; /* 橘色邊框 */
+  /* 可以使用一個不同的動畫 */
+  transition: background-color 0.3s ease; 
+}
+
+/* 讓鼠標在遊戲結束後不再改變樣式，提升 UX */
+.cell:hover {
+  background-color: #eee;
+}
+
+/* 🚨 鎖定鼠標樣式：在遊戲結束時，格子不應有 pointer 或 hover 效果 */
+#board.game-over .cell, 
+.cell:not(:empty), /* 已經填寫的格子 */
+#board[data-game-over="true"] .cell {
+  cursor: default;
+}
+
+#board[data-game-over="true"] .cell:hover {
+  background-color: white; /* 恢復白色，避免 hover 效果 */
+}
