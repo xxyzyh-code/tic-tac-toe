@@ -1,10 +1,18 @@
-/* style.css */
+/* style.css - 編程 AI 整理版本 */
+
+/* --- 基礎排版 --- */
 body {
   font-family: sans-serif;
   text-align: center;
   background-color: #f0f0f0;
+  padding-top: 20px; /* 增加頂部空間 */
 }
 
+h1 {
+  color: #333;
+}
+
+/* --- 棋盤與格子樣式 --- */
 #board {
   display: grid;
   grid-template-columns: repeat(3, 100px);
@@ -18,22 +26,58 @@ body {
   height: 100px;
   background-color: white;
   font-size: 48px;
+  font-weight: bold; /* 讓 X/O 更醒目 */
+  color: #333;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: 2px solid #333;
+  transition: background-color 0.1s ease; /* 平滑的 hover 過渡 */
 }
 
+/* 正常遊戲中的互動樣式 */
 .cell:hover {
   background-color: #eee;
 }
 
-#restart {
-  padding: 10px 20px;
-  font-size: 16px;
+/* --- 遊戲結果視覺回饋 --- */
+
+/* 勝利格子的高亮樣式 */
+.cell.win {
+  background-color: #ffda6a; /* 亮黃色 */
+  color: #333;
+  border-color: #f39c12;
+  animation: flashWin 0.5s ease-in-out 3;
 }
 
+/* 平局時所有格子的高亮樣式 */
+.cell.draw-win {
+  background-color: #f7d794; /* 較淺的橘黃色 */
+  color: #333;
+  border-color: #e67e22; /* 橘色邊框 */
+  /* 不使用動畫，避免與勝利動畫混亂 */
+}
+
+@keyframes flashWin {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* --- 遊戲狀態鎖定 (UX 優化) --- */
+/* 當遊戲結束 (data-game-over="true") 或格子已被填寫時，移除互動效果 */
+
+#board[data-game-over="true"] .cell, 
+.cell:not(:empty) {
+  cursor: default;
+}
+
+#board[data-game-over="true"] .cell:hover, 
+.cell:not(:empty):hover {
+  background-color: white; /* 鎖定背景色，移除 hover 效果 */
+}
+
+/* --- 模式選擇 --- */
 #mode-select {
   margin: 20px;
 }
@@ -43,38 +87,33 @@ body {
   margin: 0 10px;
   font-size: 16px;
   cursor: pointer;
+  border: 1px solid #007bff;
+  background-color: white;
+  color: #007bff;
+  transition: all 0.2s ease;
 }
 
-/* 🚨 建議 2：模式按鈕的視覺反饋 */
+/* 模式按鈕的視覺反饋 */
 #mode-select button.active {
   background-color: #007bff;
   color: white;
-  border-color: #007bff;
   cursor: default;
   font-weight: bold;
 }
 
+#mode-select button:hover:not(.active) {
+  background-color: #eaf4ff;
+}
+
+/* --- 狀態訊息 --- */
 #status-message {
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 15px;
-  color: #007bff; /* 使用一個醒目的顏色 */
+  /* 顏色由 JS 根據狀態 (藍、綠、紅、橘) 設置，這裡只給初始值 */
 }
 
-/* 🚨 建議 1：勝利格子的高亮樣式 */
-.cell.win {
-  background-color: #ffda6a; /* 亮黃色 */
-  color: #333;
-  border-color: #f39c12;
-  animation: flashWin 0.5s ease-in-out 3; /* 讓格子閃爍幾次 */
-}
-
-@keyframes flashWin {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* 🚨 新增：計分板樣式 */
+/* --- 計分板樣式 --- */
 #score-board {
   display: flex;
   justify-content: center;
@@ -84,6 +123,7 @@ body {
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: #fff;
+  width: 300px; /* 與棋盤寬度接近，保持視覺平衡 */
 }
 
 #score-board p {
@@ -96,27 +136,12 @@ body {
   color: #d35400; /* 突顯分數的顏色 */
 }
 
-/* 🚨 新增：平局時所有格子的高亮樣式 */
-.cell.draw-win {
-  background-color: #f7d794; /* 較淺的橘黃色 */
-  color: #333;
-  border-color: #e67e22; /* 橘色邊框 */
-  /* 可以使用一個不同的動畫 */
-  transition: background-color 0.3s ease; 
-}
-
-/* 讓鼠標在遊戲結束後不再改變樣式，提升 UX */
-.cell:hover {
-  background-color: #eee;
-}
-
-/* 🚨 鎖定鼠標樣式：在遊戲結束時，格子不應有 pointer 或 hover 效果 */
-#board.game-over .cell, 
-.cell:not(:empty), /* 已經填寫的格子 */
-#board[data-game-over="true"] .cell {
-  cursor: default;
-}
-
-#board[data-game-over="true"] .cell:hover {
-  background-color: white; /* 恢復白色，避免 hover 效果 */
+/* --- 重啟按鈕 --- */
+#restart {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  border: 1px solid #333;
+  background-color: #fff;
 }
