@@ -17,18 +17,18 @@ const WINNING_COMBOS = [
     [0,4,8],[2,4,6]          // 對角線
 ];
 
+// --- DOM 元素集中管理 ---
 const cells = document.querySelectorAll('.cell');
 const restartBtn = document.getElementById('restart');
 const easyBtn = document.getElementById('easy');
 const hardBtn = document.getElementById('hard');
 const gameArea = document.getElementById('game');
 const statusMessage = document.getElementById('status-message');
-const boardEl = document.getElementById('board'); // 🚨 新增：獲取棋盤本身，用於鎖定點擊
-
-// 計分板 DOM 元素
+const boardEl = document.getElementById('board'); 
 const playerScoreEl = document.getElementById('player-score');
 const aiScoreEl = document.getElementById('ai-score');
 const drawScoreEl = document.getElementById('draw-score');
+
 
 // --- 輔助函數 ---
 
@@ -42,6 +42,7 @@ function checkWin(symbol, currentBoard = board) {
   return WINNING_COMBOS.some(combo => combo.every(i => currentBoard[i] === symbol));
 }
 
+
 // --- 遊戲邏輯核心 ---
 
 function initializeGame(hardMode = false) {
@@ -51,7 +52,7 @@ function initializeGame(hardMode = false) {
     cells.forEach(cell => {
         cell.textContent = '';
         cell.classList.remove('win');
-        cell.classList.remove('draw-win'); // 🚨 確保移除平局高亮
+        cell.classList.remove('draw-win'); 
     });
     
     gameOver = false;
@@ -62,8 +63,8 @@ function initializeGame(hardMode = false) {
     
     gameArea.style.display = 'block';
     statusMessage.textContent = '輪到你了 (X)！';
-    statusMessage.style.color = '#007bff'; // 🚨 重置狀態訊息顏色
-    boardEl.removeAttribute('data-game-over'); // 🚨 移除棋盤的遊戲結束標記
+    statusMessage.style.color = '#007bff'; 
+    boardEl.removeAttribute('data-game-over'); 
     
     updateScoreBoard(); 
 }
@@ -72,11 +73,11 @@ function checkResult(lastMover) {
     const winningCombo = WINNING_COMBOS.find(combo => combo.every(i => board[i] === lastMover));
 
     if (winningCombo) {
-        // 🚨 勝利邏輯
+        // 勝利邏輯
         statusMessage.textContent = `${lastMover === player ? '恭喜你贏了' : '電腦贏了'}！遊戲結束。`;
-        statusMessage.style.color = lastMover === player ? '#27ae60' : '#c0392b'; // 🚨 綠色/紅色提示
+        statusMessage.style.color = lastMover === player ? '#27ae60' : '#c0392b'; 
         gameOver = true;
-        boardEl.setAttribute('data-game-over', 'true'); // 🚨 設置棋盤的遊戲結束標記
+        boardEl.setAttribute('data-game-over', 'true');
         
         if (lastMover === player) {
             scores.player++;
@@ -90,13 +91,13 @@ function checkResult(lastMover) {
     }
     
     if (!board.includes('')) {
-        // 🚨 平局邏輯
+        // 平局邏輯
         statusMessage.textContent = '平局！沒有人獲勝。';
-        statusMessage.style.color = '#e67e22'; // 🚨 橘色提示
+        statusMessage.color = '#e67e22'; 
         gameOver = true;
-        boardEl.setAttribute('data-game-over', 'true'); // 🚨 設置棋盤的遊戲結束標記
+        boardEl.setAttribute('data-game-over', 'true');
         
-        cells.forEach(cell => cell.classList.add('draw-win')); // 🚨 平局時高亮
+        cells.forEach(cell => cell.classList.add('draw-win')); 
         
         scores.draw++;
         updateScoreBoard();
@@ -108,13 +109,14 @@ function checkResult(lastMover) {
     if (!gameOver) {
         const nextMover = lastMover === player ? '電腦 (O)' : '你 (X)';
         statusMessage.textContent = `輪到 ${nextMover} 了！`;
-        statusMessage.style.color = '#007bff'; // 🚨 恢復藍色
+        statusMessage.style.color = '#007bff'; 
     }
     
     return false;
 }
 
-// --- AI 邏輯 ---
+
+// --- AI 與 Minimax 邏輯 (不變) ---
 
 function minimax(newBoard, depth, isMaximizing) {
     if (checkWin(ai, newBoard)) return 10 - depth;
@@ -127,7 +129,7 @@ function minimax(newBoard, depth, isMaximizing) {
             if (newBoard[i] === '') {
                 newBoard[i] = ai;
                 let score = minimax(newBoard, depth + 1, false);
-                newBoard[i] = '';
+                newBoard[i] = ''; 
                 bestScore = Math.max(score, bestScore);
             }
         }
@@ -152,7 +154,6 @@ function aiMove() {
     let move = null;
     
     if (useMinimax) {
-        // 困難模式：使用 Minimax 
         let bestMove = null;
         let bestScore = -Infinity;
         
@@ -160,7 +161,7 @@ function aiMove() {
             if (board[i] === '') {
                 board[i] = ai;
                 let score = minimax(board, 0, false);
-                board[i] = ''; // 撤銷移動
+                board[i] = ''; 
                 if (score > bestScore) {
                     bestScore = score;
                     bestMove = i;
@@ -170,7 +171,6 @@ function aiMove() {
         move = bestMove;
         
     } else {
-        // 簡單模式：隨機移動
         let empty = board.map((v, i) => v === '' ? i : null).filter(v => v !== null);
         if (empty.length > 0) {
             move = empty[Math.floor(Math.random() * empty.length)];
@@ -182,46 +182,56 @@ function aiMove() {
         cells[move].textContent = ai;
         checkResult(ai);
     } else {
-        // 處理沒有可移動位置但尚未判定平局的邊緣情況
         checkResult(ai); 
     }
 }
 
-// --- 事件處理 ---
+// --- 集中事件處理函數 (重構核心) ---
 
-cells.forEach(cell => {
-    cell.addEventListener('click', (e) => {
-        // 檢查遊戲是否結束或該格子是否已填寫
-        if (gameOver || e.target.textContent !== '') {
-            return;
-        }
+function handleCellClick(e) {
+    // 檢查遊戲是否結束或該格子是否已填寫
+    if (gameOver || e.target.textContent !== '') {
+        return;
+    }
 
-        const index = parseInt(e.target.dataset.index);
+    const index = parseInt(e.target.dataset.index);
 
-        // 玩家移動
-        board[index] = player;
-        cells[index].textContent = player;
-        
-        // 檢查勝負或平局
-        if (checkResult(player)) return;
+    // 玩家移動
+    board[index] = player;
+    cells[index].textContent = player;
+    
+    // 檢查勝負或平局
+    if (checkResult(player)) return;
 
-        // 電腦移動
-        statusMessage.textContent = '電腦思考中...';
-        // 延遲 AI 移動，讓 UI 有時間更新
-        setTimeout(aiMove, 500); 
+    // 電腦移動
+    statusMessage.textContent = '電腦思考中...';
+    // 延遲 AI 移動
+    setTimeout(aiMove, 500); 
+}
+
+function attachEventListeners() {
+    // 模式選擇按鈕
+    easyBtn.addEventListener('click', () => initializeGame(false));
+    hardBtn.addEventListener('click', () => initializeGame(true));
+
+    // 棋盤格子點擊
+    cells.forEach(cell => {
+        cell.addEventListener('click', handleCellClick);
     });
-});
 
-easyBtn.addEventListener('click', () => initializeGame(false));
-hardBtn.addEventListener('click', () => initializeGame(true));
+    // 重新開始按鈕
+    restartBtn.addEventListener('click', () => {
+        initializeGame(useMinimax); 
+    });
+}
 
-restartBtn.addEventListener('click', () => {
-    // 為了保持選擇的模式，重新初始化遊戲
-    initializeGame(useMinimax); 
-});
 
 // --- 初始啟動 ---
-// 確保載入後顯示計分板，並初始化遊戲（默認簡單模式）
-updateScoreBoard();
-// 讓用戶先選擇模式，所以不直接 call initializeGame
-// initializeGame(false); 
+function init() {
+    updateScoreBoard(); // 顯示計分板
+    attachEventListeners(); // 綁定所有事件
+    // 遊戲等待用戶點擊模式按鈕開始，不自動初始化棋盤
+}
+
+// 頁面載入後執行
+init();
